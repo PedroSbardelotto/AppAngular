@@ -16,18 +16,38 @@ export class QuadroTarefasComponent {
   fazendo: Tarefa[] = [];
   concluido: Tarefa[] = [];
 
+  listas: [string, Tarefa[]][] = [];
+
   constructor(private tarefaService: TarefaService) {
-    const tarefas = this.tarefaService.listar();
-    this.pendentes = tarefas.filter(t => t.status === 'pendente');
-    this.fazendo = tarefas.filter(t => t.status === 'fazendo');
-    this.concluido = tarefas.filter(t => t.status === 'concluido');
+    const tarefasPorStatus = this.tarefaService.listar();
+    this.pendentes = tarefasPorStatus['todo'];
+    this.fazendo = tarefasPorStatus['doing'];
+    this.concluido = tarefasPorStatus['done'];
+
+
+    this.listas = [
+      ['To Do', this.pendentes],
+      ['Fazendo', this.fazendo],
+      ['Concluído', this.concluido]
+    ];
   }
 
   mover(event: any, destino: Tarefa[]) {
-    const tarefa = event.item.data;
+    const tarefa: Tarefa = event.item.data;
     const origem = event.previousContainer.data;
 
-    origem.splice(event.previousIndex, 1);
-    destino.splice(event.currentIndex, 0, tarefa);
+    if (Array.isArray(origem) && Array.isArray(destino)) {
+      origem.splice(event.previousIndex, 1);
+      destino.splice(event.currentIndex, 0, tarefa);
+
+      // Atualiza o status da tarefa com base no destino
+      const novaLista = this.listas.find(([_, lista]) => lista === destino);
+      if (novaLista) {
+        const novoStatus = novaLista[0];
+        tarefa.status = novoStatus === 'pendente' ? 'pendente' :
+          novoStatus === 'fazendo' ? 'fazendo' : 'concluido';
+        this.tarefaService.atualizarTarefa(tarefa);
+      }
+    }
   }
 }

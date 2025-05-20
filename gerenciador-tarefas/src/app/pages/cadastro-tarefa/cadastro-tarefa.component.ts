@@ -13,18 +13,26 @@ import { Tarefa } from '../../models/tarefa.model';
   styleUrls: ['./cadastro-tarefa.component.css']
 })
 export class CadastroTarefaComponent {
+  public get tarefaService(): TarefaService {
+    return this._tarefaService;
+  }
+  public set tarefaService(value: TarefaService) {
+    this._tarefaService = value;
+  }
   tarefa: Tarefa = {
-    id: 0,
-    nome: '',
-    descricao: '',
-    validade: '',
-    prioridade: 'media'
+    id: 1,
+    nome: 'Exemplo',
+    descricao: 'Descrição',
+    validade: '2025-12-31',
+    prioridade: 'media',
+    status: 'pendente',
+    vencimento: ''
   };
 
   tarefas: Tarefa[] = [];
   editando: boolean = false;
 
-  constructor(private tarefaService: TarefaService) {}
+  constructor(private _tarefaService: TarefaService) {}
 
   salvarTarefa(): void {
     if (this.editando) {
@@ -37,8 +45,10 @@ export class CadastroTarefaComponent {
       id: 0,
       nome: '',
       descricao: '',
-      vencimento: '',
-      prioridade: 'media'
+      validade: '',
+      prioridade: 'media',
+      status: 'pendente',
+      vencimento: ''
     };
 
     this.editando = false;

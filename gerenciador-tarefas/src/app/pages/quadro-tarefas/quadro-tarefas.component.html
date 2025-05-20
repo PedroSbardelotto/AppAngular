@@ -1,7 +1,8 @@
 <div class="container mt-4">
   <div class="row">
-    <div class="col" *ngFor="let lista of [['pendentes', pendentes], ['fazendo', fazendo], ['concluido', concluido]]">
+    <div class="col" *ngFor="let lista of listas">
       <h4 class="text-capitalize">{{ lista[0] }}</h4>
+
       <div
         cdkDropList
         [cdkDropListData]="lista[1]"
