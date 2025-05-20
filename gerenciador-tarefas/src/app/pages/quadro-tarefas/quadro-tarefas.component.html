@@ -1,0 +1,24 @@
+<div class="container mt-4">
+  <div class="row">
+    <div class="col" *ngFor="let lista of [['pendentes', pendentes], ['fazendo', fazendo], ['concluido', concluido]]">
+      <h4 class="text-capitalize">{{ lista[0] }}</h4>
+      <div
+        cdkDropList
+        [cdkDropListData]="lista[1]"
+        class="p-3 border rounded bg-light min-vh-25"
+        (cdkDropListDropped)="mover($event, lista[1])"
+      >
+        <div
+          *ngFor="let tarefa of lista[1]"
+          class="p-2 mb-2 bg-white border rounded shadow-sm"
+          cdkDrag
+          [cdkDragData]="tarefa"
+        >
+          <strong>{{ tarefa.nome }}</strong>
+          <p class="mb-1">{{ tarefa.descricao }}</p>
+          <small class="text-muted">Prioridade: {{ tarefa.prioridade }}</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,58 @@
+<div class="container mt-4">
+  <h2>{{ editando ? 'Editar Tarefa' : 'Cadastrar Tarefa' }}</h2>
+  
+  <form (ngSubmit)="salvarTarefa()" class="mb-4">
+    <div class="mb-3">
+      <label for="nome" class="form-label">Nome</label>
+      <input type="text" id="nome" class="form-control" [(ngModel)]="tarefa.nome" name="nome" required />
+    </div>
+
+    <div class="mb-3">
+      <label for="descricao" class="form-label">Descrição</label>
+      <textarea id="descricao" class="form-control" [(ngModel)]="tarefa.descricao" name="descricao" required></textarea>
+    </div>
+
+    <div class="mb-3">
+      <label for="vencimento" class="form-label">Data de Validade</label>
+      <input type="date" id="vencimento" class="form-control" [(ngModel)]="tarefa.vencimento" name="vencimento" required />
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Prioridade</label>
+      <select class="form-select" [(ngModel)]="tarefa.prioridade" name="prioridade">
+        <option value="alta">Alta</option>
+        <option value="media">Média</option>
+        <option value="baixa">Baixa</option>
+      </select>
+    </div>
+
+    <button type="submit" class="btn btn-success">{{ editando ? 'Atualizar' : 'Salvar' }}</button>
+  </form>
+
+  <hr />
+
+  <h3>Lista de Tarefas</h3>
+  <table class="table table-bordered table-striped">
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Descrição</th>
+        <th>Validade</th>
+        <th>Prioridade</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let t of tarefas">
+        <td>{{ t.nome }}</td>
+        <td>{{ t.descricao }}</td>
+        <td>{{ t.vencimento }}</td>
+        <td>{{ t.prioridade }}</td>
+        <td>
+          <button class="btn btn-primary btn-sm me-2" (click)="editarTarefa(t)">Editar</button>
+          <button class="btn btn-danger btn-sm" (click)="excluirTarefa(t.id)">Excluir</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
