@@ -1,32 +1,63 @@
 <div class="container mt-4">
   <h2>{{ editando ? 'Editar Tarefa' : 'Cadastrar Tarefa' }}</h2>
-  
-  <form (ngSubmit)="salvarTarefa()" class="mb-4">
-    <div class="mb-3">
-      <label for="nome" class="form-label">Nome</label>
-      <input type="text" id="nome" class="form-control" [(ngModel)]="tarefa.nome" name="nome" required />
+
+  <form (ngSubmit)="salvarTarefa()" #form="ngForm" novalidate>
+    <div class="form-group mb-3">
+      <label for="nome">Nome</label>
+      <input [(ngModel)]="tarefa.nome" name="nome" id="nome" class="form-control" required #nome="ngModel" />
+      <div *ngIf="nome.invalid && nome.touched" class="text-danger">
+        O nome é obrigatório.
+      </div>
     </div>
 
-    <div class="mb-3">
-      <label for="descricao" class="form-label">Descrição</label>
-      <textarea id="descricao" class="form-control" [(ngModel)]="tarefa.descricao" name="descricao" required></textarea>
+    <div class="form-group mb-3">
+      <label for="descricao">Descrição</label>
+      <textarea [(ngModel)]="tarefa.descricao" name="descricao" id="descricao" class="form-control" required
+        #descricao="ngModel"></textarea>
+      <div *ngIf="descricao.invalid && descricao.touched" class="text-danger">
+        A descrição é obrigatória.
+      </div>
     </div>
 
-    <div class="mb-3">
-      <label for="vencimento" class="form-label">Data de Validade</label>
-      <input type="date" id="vencimento" class="form-control" [(ngModel)]="tarefa.validade" name="validade" required />
+    <div class="form-group mb-3">
+      <label for="validade">Validade</label>
+      <input [(ngModel)]="tarefa.validade" name="validade" id="validade" class="form-control" type="date"
+        #validade="ngModel" />
+      <!-- não obrigatório, então não mostramos erro -->
     </div>
 
-    <div class="mb-3">
-      <label class="form-label">Prioridade</label>
-      <select class="form-select" [(ngModel)]="tarefa.prioridade" name="prioridade">
-        <option value="alta">Alta</option>
-        <option value="media">Média</option>
+    <div class="form-group mb-3">
+      <label for="prioridade">Prioridade</label>
+      <select [(ngModel)]="tarefa.prioridade" name="prioridade" id="prioridade" class="form-control" required
+        #prioridade="ngModel">
+        <option value="" disabled selected>Selecione a prioridade</option>
         <option value="baixa">Baixa</option>
+        <option value="media">Média</option>
+        <option value="alta">Alta</option>
       </select>
+      <div *ngIf="prioridade.invalid && prioridade.touched" class="text-danger">
+        A prioridade é obrigatória.
+      </div>
+    </div>
+    <div class="form-group mb-3">
+      <label for="status">Status</label>
+      <select [(ngModel)]="tarefa.status" name="status" id="status" class="form-control" required #status="ngModel">
+        <option value="" disabled selected>Selecione o status</option>
+        <option value="pendente">To Do</option>
+        <option value="fazendo">Fazendo</option>
+        <option value="concluido">Concluído</option>
+      </select>
+      <div *ngIf="status.invalid && status.touched" class="text-danger">
+        O status é obrigatório.
+      </div>
     </div>
 
-    <button type="submit" class="btn btn-success">{{ editando ? 'Atualizar' : 'Salvar' }}</button>
+
+
+
+    <button type="submit" class="btn btn-primary" [disabled]="form.invalid">
+      {{ editando ? 'Atualizar' : 'Salvar' }}
+    </button>
   </form>
 
   <hr />
@@ -46,7 +77,7 @@
       <tr *ngFor="let t of tarefas">
         <td>{{ t.nome }}</td>
         <td>{{ t.descricao }}</td>
-        <td>{{ t.vencimento }}</td>
+        <td>{{ t.validade }}</td>
         <td>{{ t.prioridade }}</td>
         <td>
           <button class="btn btn-primary btn-sm me-2" (click)="editarTarefa(t)">Editar</button>

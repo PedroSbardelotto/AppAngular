@@ -13,47 +13,64 @@ import { Tarefa } from '../../models/tarefa.model';
   styleUrls: ['./cadastro-tarefa.component.css']
 })
 export class CadastroTarefaComponent {
-  public get tarefaService(): TarefaService {
-    return this._tarefaService;
-  }
-  public set tarefaService(value: TarefaService) {
-    this._tarefaService = value;
-  }
-  tarefa: Tarefa = {
-    id: 1,
-    nome: 'Exemplo',
-    descricao: 'Descrição',
-    validade: '2025-12-31',
-    prioridade: 'media',
-    status: 'pendente',
-    vencimento: ''
-  };
-
+  tarefa: Tarefa = this.novaTarefa();
   tarefas: Tarefa[] = [];
   editando: boolean = false;
 
-  constructor(private _tarefaService: TarefaService) {}
+  constructor(private tarefaService: TarefaService) {}
 
-  salvarTarefa(): void {
-    if (this.editando) {
-      this.tarefaService.atualizarTarefa(this.tarefa);
-    } else {
-      this.tarefaService.adicionarTarefa(this.tarefa);
-    }
+novaTarefa(): Tarefa {
+  return {
+    id: 0,
+    nome: '',
+    descricao: '',
+    validade: '',
+    prioridade: 'media',
+    status: 'pendente',  // ✅ Padrão
+    vencimento: ''
+  };
+}
 
-    this.tarefa = {
-      id: 0,
-      nome: '',
-      descricao: '',
-      validade: '',
-      prioridade: 'media',
-      status: 'pendente',
-      vencimento: ''
-    };
-
-    this.editando = false;
-    this.tarefas = this.tarefaService.getTarefas();
+ validarTarefa(tarefa: Tarefa): boolean {
+  if (!tarefa.nome.trim()) {
+    alert('Nome da tarefa é obrigatório.');
+    return false;
   }
+  if (!tarefa.descricao.trim()) {
+    alert('Descrição da tarefa é obrigatória.');
+    return false;
+  }
+  if (!tarefa.status) {
+    alert('Status da tarefa é obrigatório.');
+    return false;
+  }
+  return true;
+}
+
+salvarTarefa(): void {
+  // validação
+  if (!this.validarTarefa(this.tarefa)) {
+    return;
+  }
+
+  if (!this.tarefa.validade) {
+    const hoje = new Date();
+    const dataAtual = hoje.toISOString().split('T')[0]; 
+    this.tarefa.validade = dataAtual;  // ✅ Aqui está o que faltou
+  }
+
+  if (this.editando) {
+    this.tarefaService.atualizarTarefa(this.tarefa);
+  } else {
+    this.tarefaService.adicionarTarefa(this.tarefa);
+  }
+
+  // Reset
+  this.tarefa = this.novaTarefa();
+  this.editando = false;
+  this.tarefas = this.tarefaService.getTarefas();
+}
+
 
   editarTarefa(t: Tarefa): void {
     this.tarefa = { ...t };
