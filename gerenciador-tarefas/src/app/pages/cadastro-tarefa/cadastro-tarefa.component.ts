@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TarefaService } from '../../services/tarefa.service';
@@ -8,69 +8,65 @@ import { Tarefa } from '../../models/tarefa.model';
   selector: 'app-cadastro-tarefa',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  providers: [TarefaService],
+  providers: [],
   templateUrl: './cadastro-tarefa.component.html',
   styleUrls: ['./cadastro-tarefa.component.css']
 })
-export class CadastroTarefaComponent {
+export class CadastroTarefaComponent implements OnInit {
   tarefa: Tarefa = this.novaTarefa();
   tarefas: Tarefa[] = [];
   editando: boolean = false;
 
   constructor(private tarefaService: TarefaService) {}
 
-novaTarefa(): Tarefa {
-  return {
-    id: 0,
-    nome: '',
-    descricao: '',
-    validade: '',
-    prioridade: 'media',
-    status: 'pendente',  // ✅ Padrão
-    vencimento: ''
-  };
-}
-
- validarTarefa(tarefa: Tarefa): boolean {
-  if (!tarefa.nome.trim()) {
-    alert('Nome da tarefa é obrigatório.');
-    return false;
-  }
-  if (!tarefa.descricao.trim()) {
-    alert('Descrição da tarefa é obrigatória.');
-    return false;
-  }
-  if (!tarefa.status) {
-    alert('Status da tarefa é obrigatório.');
-    return false;
-  }
-  return true;
-}
-
-salvarTarefa(): void {
-  // validação
-  if (!this.validarTarefa(this.tarefa)) {
-    return;
+  novaTarefa(): Tarefa {
+    return {
+      id: 0,
+      nome: '',
+      descricao: '',
+      validade: '',
+      prioridade: 'media',
+      status: 'pendente',
+      vencimento: ''
+    };
   }
 
-  if (!this.tarefa.validade) {
-    const hoje = new Date();
-    const dataAtual = hoje.toISOString().split('T')[0]; 
-    this.tarefa.validade = dataAtual;  // ✅ Aqui está o que faltou
+  validarTarefa(tarefa: Tarefa): boolean {
+    if (!tarefa.nome.trim()) {
+      alert('Nome da tarefa é obrigatório.');
+      return false;
+    }
+    if (!tarefa.descricao.trim()) {
+      alert('Descrição da tarefa é obrigatória.');
+      return false;
+    }
+    if (!tarefa.status) {
+      alert('Status da tarefa é obrigatório.');
+      return false;
+    }
+    return true;
   }
 
-  if (this.editando) {
-    this.tarefaService.atualizarTarefa(this.tarefa);
-  } else {
-    this.tarefaService.adicionarTarefa(this.tarefa);
+  salvarTarefa(): void {
+    if (!this.validarTarefa(this.tarefa)) {
+      return;
+    }
+
+    if (!this.tarefa.validade) {
+      const hoje = new Date();
+      const dataAtual = hoje.toISOString().split('T')[0];
+      this.tarefa.validade = dataAtual;
+    }
+
+    if (this.editando) {
+      this.tarefaService.atualizarTarefa(this.tarefa);
+    } else {
+      this.tarefaService.adicionarTarefa(this.tarefa);
+    }
+
+    this.tarefa = this.novaTarefa();
+    this.editando = false;
   }
-
-  // Reset
-  this.tarefa = this.novaTarefa();
-  this.editando = false;
-  this.tarefas = this.tarefaService.getTarefas();
-}
-
 
   editarTarefa(t: Tarefa): void {
     this.tarefa = { ...t };
@@ -79,10 +75,11 @@ salvarTarefa(): void {
 
   excluirTarefa(id: number): void {
     this.tarefaService.excluirTarefa(id);
-    this.tarefas = this.tarefaService.getTarefas();
   }
 
   ngOnInit(): void {
-    this.tarefas = this.tarefaService.getTarefas();
+    this.tarefaService.tarefas$.subscribe(tarefas => {
+      this.tarefas = tarefas;
+    });
   }
 }
