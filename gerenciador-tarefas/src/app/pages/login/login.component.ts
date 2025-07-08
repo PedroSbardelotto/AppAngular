@@ -13,7 +13,7 @@ export class LoginComponent {
   email: string = '';
   senha: string = '';
   erro: string = '';
-
+  
   constructor(private router: Router) {
     // Se já estiver logado, redireciona
     const token = localStorage.getItem('token');
@@ -23,7 +23,7 @@ export class LoginComponent {
   }
 
   login() {
-    //  login fixo
+    //  login chumbado 
     if (this.email === 'admin@teste.com' && this.senha === '123456') {
       localStorage.setItem('token', 'fake-jwt-token');
       localStorage.setItem('user', JSON.stringify({ email: this.email }));
