@@ -1,103 +1,113 @@
 <div class="container mt-4">
-  <h2>{{ editando ? 'Editar Tarefa' : 'Cadastrar Tarefa' }}</h2>
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-md-10">
 
-  <form (ngSubmit)="salvarTarefa()" #form="ngForm" novalidate>
-    <div class="form-group mb-3">
-      <label for="nome">Nome</label>
-      <input [(ngModel)]="tarefa.nome" name="nome" id="nome" class="form-control" required #nome="ngModel" />
-      <div *ngIf="nome.invalid && nome.touched" class="text-danger">
-        O nome é obrigatório.
+      <h2>{{ editando ? 'Editar Tarefa' : 'Cadastrar Tarefa' }}</h2>
+
+      <form (ngSubmit)="salvarTarefa()" #form="ngForm" novalidate>
+
+        <div class="form-group mb-3">
+          <label for="nome">Nome</label>
+          <input [(ngModel)]="tarefa.nome" name="nome" id="nome" class="form-control" required #nome="ngModel" />
+          <div *ngIf="nome.invalid && nome.touched" class="text-danger">
+            O nome é obrigatório.
+          </div>
+        </div>
+
+        <div class="form-group mb-3">
+          <label for="descricao">Descrição</label>
+          <textarea [(ngModel)]="tarefa.descricao" name="descricao" id="descricao" class="form-control" required #descricao="ngModel"></textarea>
+          <div *ngIf="descricao.invalid && descricao.touched" class="text-danger">
+            A descrição é obrigatória.
+          </div>
+        </div>
+
+        <div class="form-group mb-3">
+          <label for="validade">Validade</label>
+          <input [(ngModel)]="tarefa.validade" name="validade" id="validade" class="form-control" type="date" #validade="ngModel" />
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 form-group mb-3">
+            <label for="prioridade">Prioridade</label>
+            <select [(ngModel)]="tarefa.prioridade" name="prioridade" id="prioridade" class="form-control" required #prioridade="ngModel">
+              <option value="baixa">Baixa</option>
+              <option value="media">Média</option>
+              <option value="alta">Alta</option>
+            </select>
+          </div>
+
+          <div class="col-md-6 form-group mb-3">
+            <label for="tipo">Tipo de Tarefa</label>
+            <select [(ngModel)]="tarefa.tipo" name="tipo" id="tipo" class="form-select" required #tipo="ngModel">
+              <option [ngValue]="null" disabled>Selecione um tipo</option>
+              <option *ngFor="let tipoOption of tiposDeTarefa" [value]="tipoOption">
+                {{ tipoOption }}
+              </option>
+            </select>
+            <div *ngIf="tipo.invalid && tipo.touched" class="text-danger">
+              O tipo da tarefa é obrigatório.
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group mb-3">
+          <label for="status">Status</label>
+          <select [(ngModel)]="tarefa.status" name="status" id="status" class="form-control" required #status="ngModel">
+            <option value="To Do">To Do</option>
+            <option value="Fazendo">Fazendo</option>
+            <option value="Concluído">Concluído</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary" [disabled]="form.invalid">
+          {{ editando ? 'Atualizar' : 'Salvar' }}
+        </button>
+      </form>
+
+      <hr />
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label for="filtroPrioridade" class="form-label">Filtrar por Prioridade</label>
+          <select class="form-select" id="filtroPrioridade" [(ngModel)]="prioridadeFiltro">
+            <option value="todas">Todas</option>
+            <option value="baixa">Baixa</option>
+            <option value="media">Média</option>
+            <option value="alta">Alta</option>
+          </select>
+        </div>
       </div>
-    </div>
 
-    <div class="form-group mb-3">
-      <label for="descricao">Descrição</label>
-      <textarea [(ngModel)]="tarefa.descricao" name="descricao" id="descricao" class="form-control" required
-        #descricao="ngModel"></textarea>
-      <div *ngIf="descricao.invalid && descricao.touched" class="text-danger">
-        A descrição é obrigatória.
-      </div>
-    </div>
+      <hr />
 
-    <div class="form-group mb-3">
-      <label for="validade">Validade</label>
-      <input [(ngModel)]="tarefa.validade" name="validade" id="validade" class="form-control" type="date"
-        #validade="ngModel" />
-      <!-- não obrigatório, então não mostramos erro -->
-    </div>
+      <h3>Lista de Tarefas</h3>
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Tipo da Tarefa</th>
+            <th>Validade</th>
+            <th>Prioridade</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let t of tarefas | filterTarefa: prioridadeFiltro">
+            <td>{{ t.nome }}</td>
+            <td>{{ t.tipo || 'Não definido' }}</td>
+            <td>{{ t.validade | date:'dd/MM/yyyy' }}</td>
+            <td>{{ t.prioridade }}</td>
+            <td>{{ t.status }}</td>
+            <td>
+              <button class="btn btn-primary btn-sm me-2" (click)="editarTarefa(t)">Editar</button>
+              <button class="btn btn-danger btn-sm" (click)="excluirTarefa(t.id)">Excluir</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
 
-    <div class="form-group mb-3">
-      <label for="prioridade">Prioridade</label>
-      <select [(ngModel)]="tarefa.prioridade" name="prioridade" id="prioridade" class="form-control" required
-        #prioridade="ngModel">
-        <option value="" disabled selected>Selecione a prioridade</option>
-        <option value="baixa">Baixa</option>
-        <option value="media">Média</option>
-        <option value="alta">Alta</option>
-      </select>
-      <div *ngIf="prioridade.invalid && prioridade.touched" class="text-danger">
-        A prioridade é obrigatória.
-      </div>
-    </div>
-    <div class="form-group mb-3">
-      <label for="status">Status</label>
-      <select [(ngModel)]="tarefa.status" name="status" id="status" class="form-control" required #status="ngModel">
-        <option value="" disabled selected>Selecione o status</option>
-        <option value="pendente">To Do</option>
-        <option value="fazendo">Fazendo</option>
-        <option value="concluido">Concluído</option>
-      </select>
-      <div *ngIf="status.invalid && status.touched" class="text-danger">
-        O status é obrigatório.
-      </div>
-    </div>
-
-
-
-
-    <button type="submit" class="btn btn-primary" [disabled]="form.invalid">
-      {{ editando ? 'Atualizar' : 'Salvar' }}
-    </button>
-  </form>
-
-  <hr />
-
-  <div class="row mb-3">
-    <div class="col-md-4">
-      <label for="filtroPrioridade" class="form-label">Filtrar por Prioridade</label>
-      <select class="form-select" id="filtroPrioridade" [(ngModel)]="prioridadeFiltro">
-        <option value="todas">Todas</option>
-        <option value="baixa">Baixa</option>
-        <option value="media">Média</option>
-        <option value="alta">Alta</option>
-      </select>
     </div>
   </div>
-  <hr />
-  
-
-  <h3>Lista de Tarefas</h3>
-  <table class="table table-bordered table-striped">
-    <thead>
-      <tr>
-        <th>Nome</th>
-        <th>Descrição</th>
-        <th>Validade</th>
-        <th>Prioridade</th>
-        <th>Ações</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let t of tarefas | filterTarefa: prioridadeFiltro">
-        <td>{{ t.nome }}</td>
-        <td>{{ t.descricao }}</td>
-        <td>{{ t.validade }}</td>
-        <td>{{ t.prioridade }}</td>
-        <td>
-          <button class="btn btn-primary btn-sm me-2" (click)="editarTarefa(t)">Editar</button>
-          <button class="btn btn-danger btn-sm" (click)="excluirTarefa(t.id)">Excluir</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
 </div>

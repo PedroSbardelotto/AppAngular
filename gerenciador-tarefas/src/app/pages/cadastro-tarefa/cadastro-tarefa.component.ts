@@ -1,35 +1,46 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { NgForm } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TarefaService } from '../../services/tarefa.service';
 import { Tarefa } from '../../models/tarefa.model';
 import { FilterTarefaPipe } from '../../pipes/filter-tarefa.pipe';
 
+
 @Component({
   selector: 'app-cadastro-tarefa',
   standalone: true,
-  imports: [CommonModule, FormsModule, FilterTarefaPipe ],
-  providers: [],
+  imports: [CommonModule, FormsModule, FilterTarefaPipe],
   templateUrl: './cadastro-tarefa.component.html',
   styleUrls: ['./cadastro-tarefa.component.css']
 })
 export class CadastroTarefaComponent implements OnInit {
+
+  @ViewChild('form') form!: NgForm;
   tarefa: Tarefa = this.novaTarefa();
   tarefas: Tarefa[] = [];
   editando: boolean = false;
   prioridadeFiltro: string = 'todas';
 
-  constructor(private tarefaService: TarefaService) {}
+
+  tiposDeTarefa: string[] = ['Chamado', 'Bug Produção', 'Task QA', 'RDM', 'Task DEV'];
+
+  constructor(private tarefaService: TarefaService) { }
+
+  ngOnInit(): void {
+    this.tarefaService.tarefas$.subscribe(tarefas => {
+      this.tarefas = tarefas;
+    });
+  }
 
   novaTarefa(): Tarefa {
     return {
-      id: 0,
       nome: '',
       descricao: '',
       validade: '',
       prioridade: 'media',
-      status: 'pendente',
-      vencimento: ''
+      status: 'To Do',
+      tipo: null,
     };
   }
 
@@ -42,8 +53,8 @@ export class CadastroTarefaComponent implements OnInit {
       alert('Descrição da tarefa é obrigatória.');
       return false;
     }
-    if (!tarefa.status) {
-      alert('Status da tarefa é obrigatório.');
+    if (!tarefa.tipo) {
+      alert('O tipo da tarefa é obrigatório.');
       return false;
     }
     return true;
@@ -54,34 +65,24 @@ export class CadastroTarefaComponent implements OnInit {
       return;
     }
 
-    if (!this.tarefa.validade) {
-      const hoje = new Date();
-      const dataAtual = hoje.toISOString().split('T')[0];
-      this.tarefa.validade = dataAtual;
-    }
-
     if (this.editando) {
       this.tarefaService.atualizarTarefa(this.tarefa);
     } else {
-      this.tarefaService.adicionarTarefa(this.tarefa);
+      this.tarefaService.adicionarTarefa({ ...this.tarefa });
     }
 
-    this.tarefa = this.novaTarefa();
     this.editando = false;
+    this.form.resetForm();
   }
 
   editarTarefa(t: Tarefa): void {
-    this.tarefa = { ...t };
+    this.tarefa = JSON.parse(JSON.stringify(t));
     this.editando = true;
   }
 
-  excluirTarefa(id: number): void {
-    this.tarefaService.excluirTarefa(id);
-  }
-
-  ngOnInit(): void {
-    this.tarefaService.tarefas$.subscribe(tarefas => {
-      this.tarefas = tarefas;
-    });
+  excluirTarefa(id: number | undefined): void {
+    if (id !== undefined) {
+      this.tarefaService.excluirTarefa(id);
+    }
   }
 }

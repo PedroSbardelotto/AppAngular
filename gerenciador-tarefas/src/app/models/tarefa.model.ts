@@ -1,9 +1,9 @@
 export interface Tarefa {
-  id: number;
+  id?: number;
   nome: string;
   descricao: string;
   validade: string;
   prioridade: 'baixa' | 'media' | 'alta';
-  status: 'pendente' | 'fazendo' | 'concluido';
-  vencimento: string;
+  status: 'To Do' | 'Fazendo' | 'Concluído';
+  tipo: string | null; 
 }
