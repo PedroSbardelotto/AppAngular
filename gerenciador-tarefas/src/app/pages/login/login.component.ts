@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
@@ -8,29 +8,35 @@ import { Router } from '@angular/router';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './login.component.html',
+  styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
-  email: string = '';
-  senha: string = '';
-  erro: string = '';
   
-  constructor(private router: Router) {
-    // Se já estiver logado, redireciona
-    const token = localStorage.getItem('token');
-    if (token) {
-      this.router.navigate(['/inicio']);
-    }
-  }
+  email = '';
+  senha = '';
+  erro = ' ';
+  constructor(
+    private router: Router,
+   
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {}
 
-  login() {
-    //  login chumbado 
-    if (this.email === 'admin@teste.com' && this.senha === '123456') {
-      localStorage.setItem('token', 'fake-jwt-token');
-      localStorage.setItem('user', JSON.stringify({ email: this.email }));
-      this.router.navigate(['/inicio']);
+  login(): void {
+    
+    if (this.email === 'aluno@senac.com' && this.senha === '123456') {
+      
+      
+      if (isPlatformBrowser(this.platformId)) {
+        
+        const fakeToken = btoa(`${this.email}:${this.senha}`);
+        localStorage.setItem('token', fakeToken);
+        
+        
+        this.router.navigate(['/inicio']);
+      }
+
     } else {
-      this.erro = 'E-mail ou senha inválidos';
+      alert('E-mail ou senha inválidos.');
     }
   }
 }
-
