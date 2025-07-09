@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TarefaService } from '../../services/tarefa.service';
 import { Tarefa } from '../../models/tarefa.model';
+import { FilterTarefaPipe } from '../../pipes/filter-tarefa.pipe';
 
 @Component({
   selector: 'app-cadastro-tarefa',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FilterTarefaPipe ],
   providers: [],
   templateUrl: './cadastro-tarefa.component.html',
   styleUrls: ['./cadastro-tarefa.component.css']
@@ -16,6 +17,7 @@ export class CadastroTarefaComponent implements OnInit {
   tarefa: Tarefa = this.novaTarefa();
   tarefas: Tarefa[] = [];
   editando: boolean = false;
+  prioridadeFiltro: string = 'todas';
 
   constructor(private tarefaService: TarefaService) {}
 

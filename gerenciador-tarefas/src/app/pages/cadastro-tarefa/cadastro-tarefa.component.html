@@ -62,6 +62,20 @@
 
   <hr />
 
+  <div class="row mb-3">
+    <div class="col-md-4">
+      <label for="filtroPrioridade" class="form-label">Filtrar por Prioridade</label>
+      <select class="form-select" id="filtroPrioridade" [(ngModel)]="prioridadeFiltro">
+        <option value="todas">Todas</option>
+        <option value="baixa">Baixa</option>
+        <option value="media">Média</option>
+        <option value="alta">Alta</option>
+      </select>
+    </div>
+  </div>
+  <hr />
+  
+
   <h3>Lista de Tarefas</h3>
   <table class="table table-bordered table-striped">
     <thead>
@@ -74,7 +88,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let t of tarefas">
+      <tr *ngFor="let t of tarefas | filterTarefa: prioridadeFiltro">
         <td>{{ t.nome }}</td>
         <td>{{ t.descricao }}</td>
         <td>{{ t.validade }}</td>
