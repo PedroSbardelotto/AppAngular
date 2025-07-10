@@ -1,29 +1,26 @@
-import { inject, PLATFORM_ID } from '@angular/core';
+import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { isPlatformBrowser } from '@angular/common';
+import { map, take, tap } from 'rxjs/operators';
+import { AuthService } from '../services/auth.service';
 
 export const authGuard: CanActivateFn = (route, state) => {
- 
+  const authService = inject(AuthService);
   const router = inject(Router);
- 
-  const platformId = inject(PLATFORM_ID);
 
   
-  if (isPlatformBrowser(platformId)) {
-    const token = localStorage.getItem('token');
-
-    if (token) {
+  return authService.user$.pipe(
+    take(1),
+    map(user => {
       
-      return true;
-    } else {
+      const isLoggedIn = !!user;
       
-      console.log('AuthGuard: Acesso bloqueado. Redirecionando para /login');
-      router.navigate(['/login']);
-    
-      return false;
-    }
-  }
-
- 
-  return false;
+      if (isLoggedIn) {
+        return true; 
+      } else {
+        // Se não estiver logado, redireciona para o login e bloqueia a rota
+        router.navigate(['/login']);
+        return false;
+      }
+    })
+  );
 };

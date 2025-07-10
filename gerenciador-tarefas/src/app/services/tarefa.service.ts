@@ -1,24 +1,24 @@
 import { Injectable } from '@angular/core';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { BehaviorSubject } from 'rxjs';
-import { environment } from '../../environments/environment';
 import { Tarefa } from '../models/tarefa.model';
+import { AuthService } from './auth.service'; 
 
 @Injectable({
   providedIn: 'root'
 })
 export class TarefaService {
-  private supabase: SupabaseClient;
   private tarefasSubject = new BehaviorSubject<Tarefa[]>([]);
   public tarefas$ = this.tarefasSubject.asObservable();
 
-  constructor() {
-    this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
+  // Injetando o AuthService no construtor
+  constructor(private authService: AuthService) {
     this.carregarTarefasIniciais();
   }
 
+  
   async carregarTarefasIniciais() {
-    const { data, error } = await this.supabase
+    //  conexão do AuthService
+    const { data, error } = await this.authService.supabase
       .from('tarefas')
       .select('*')
       .order('id', { ascending: true });
@@ -30,10 +30,8 @@ export class TarefaService {
     }
   }
 
-  // MÉTODO CORRIGIDO
+  // 
   async adicionarTarefa(tarefa: Tarefa) {
-    // Criamos um objeto novo apenas com os dados que queremos inserir.
-    // Deixamos 'id' e 'created_at' de fora para o Supabase cuidar deles.
     const novaTarefa = {
       nome: tarefa.nome,
       descricao: tarefa.descricao,
@@ -43,9 +41,10 @@ export class TarefaService {
       tipo: tarefa.tipo
     };
 
-    const { error } = await this.supabase
+    //  conexão do AuthService
+    const { error } = await this.authService.supabase
       .from('tarefas')
-      .insert(novaTarefa); // Enviamos o objeto limpo
+      .insert(novaTarefa);
 
     if (error) {
       console.error('Erro ao adicionar tarefa:', error);
@@ -54,8 +53,8 @@ export class TarefaService {
     }
   }
 
+  
   async atualizarTarefa(tarefa: Tarefa) {
-     // Para atualizar, o objeto precisa ter o id
     const tarefaParaAtualizar = {
       id: tarefa.id,
       nome: tarefa.nome,
@@ -66,7 +65,8 @@ export class TarefaService {
       tipo: tarefa.tipo
     };
 
-    const { error } = await this.supabase
+    //  conexão do AuthService
+    const { error } = await this.authService.supabase
       .from('tarefas')
       .update(tarefaParaAtualizar)
       .eq('id', tarefa.id);
@@ -78,8 +78,10 @@ export class TarefaService {
     }
   }
 
+  
   async excluirTarefa(id: number) {
-    const { error } = await this.supabase
+    
+    const { error } = await this.authService.supabase
       .from('tarefas')
       .delete()
       .eq('id', id);

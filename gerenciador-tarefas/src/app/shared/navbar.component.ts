@@ -1,6 +1,9 @@
-import { Component, Inject, PLATFORM_ID } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+import { Observable } from 'rxjs';
+import { User } from '@supabase/supabase-js';
 
 @Component({
   selector: 'app-navbar',
@@ -10,25 +13,18 @@ import { Router, RouterModule } from '@angular/router';
   styleUrls: ['./navbar.component.css']
 })
 export class NavbarComponent {
+  // Expondo o Observable do usuário para o template
+  user$: Observable<User | null>;
 
   constructor(
-    private router: Router,
-    // Injeta o PLATFORM_ID para saber onde o código está rodando
-    @Inject(PLATFORM_ID) private platformId: Object
-  ) {}
-
-  isLoggedIn(): boolean {
-    
-    if (isPlatformBrowser(this.platformId)) {
-      return !!localStorage.getItem('token');
-    }
-    return false;
+    private authService: AuthService,
+    private router: Router
+  ) {
+    this.user$ = this.authService.user$;
   }
 
-  logout(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.removeItem('token');
-    }
+  async logout(): Promise<void> {
+    await this.authService.signOut();
     this.router.navigate(['/login']);
   }
 }

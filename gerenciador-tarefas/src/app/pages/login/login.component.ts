@@ -1,7 +1,8 @@
-import { Component, Inject, PLATFORM_ID } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -10,33 +11,46 @@ import { Router } from '@angular/router';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent {
-  
-  email = '';
-  senha = '';
-  erro = ' ';
+export class LoginComponent implements OnInit {
+  credentials = { email: '', pass: '' };
+  authMode: 'login' | 'cadastro' = 'login';
+
   constructor(
-    private router: Router,
-   
-    @Inject(PLATFORM_ID) private platformId: Object
+    private authService: AuthService,
+    private router: Router
   ) {}
 
-  login(): void {
-    
-    if (this.email === 'aluno@senac.com' && this.senha === '123456') {
-      
-      
-      if (isPlatformBrowser(this.platformId)) {
-        
-        const fakeToken = btoa(`${this.email}:${this.senha}`);
-        localStorage.setItem('token', fakeToken);
-        
+  
+  ngOnInit(): void {
+    this.authService.user$.subscribe(user => {
+      if (user) {
         
         this.router.navigate(['/inicio']);
       }
+    });
+  }
 
+  async onSubmit() {
+   
+    if (this.authMode === 'login') {
+      const { error } = await this.authService.signIn(this.credentials);
+      if (error) {
+        alert(`Erro no login: ${error.message}`);
+      } else {
+        this.router.navigate(['/inicio']);
+      }
     } else {
-      alert('E-mail ou senha inválidos.');
+      const { error } = await this.authService.signUp(this.credentials);
+      if (error) {
+        alert(`Erro no cadastro: ${error.message}`);
+      } else {
+        alert('Cadastro realizado com sucesso! Por favor, faça o login.');
+        this.authMode = 'login';
+      }
     }
+  }
+
+  switchMode() {
+    this.authMode = this.authMode === 'login' ? 'cadastro' : 'login';
   }
 }

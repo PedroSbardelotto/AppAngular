@@ -1,40 +1,49 @@
-<div class="container mt-5">
-  <div class="row justify-content-center">
-    <div class="col-md-4">
-      <h2 class="text-center mb-4">Login</h2>
-
-      <div class="alert alert-danger" *ngIf="erro">
-        {{ erro }}
+<div class="login-container">
+  <div class="login-box">
+    <h2>{{ authMode === 'login' ? 'Login' : 'Criar Conta' }}</h2>
+    
+    <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+      
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input 
+          type="email" 
+          id="email" 
+          name="email" 
+          class="form-control"
+          [(ngModel)]="credentials.email"
+          required
+          email>
       </div>
-
-      <form (ngSubmit)="login()">
-        <div class="mb-3">
-          <label for="email" class="form-label">E-mail</label>
-          <input
-            type="email"
-            id="email"
-            class="form-control"
-            [(ngModel)]="email"
-            name="email"
-            required
-          />
-        </div>
-
-        <div class="mb-3">
-          <label for="senha" class="form-label">Senha</label>
-          <input
-            type="password"
-            id="senha"
-            class="form-control"
-            [(ngModel)]="senha"
-            name="senha"
-            required
-          />
-        </div>
-
-        <button type="submit" class="btn btn-primary w-100">Entrar</button>
-      </form>
-    </div>
+      
+      <div class="form-group">
+        <label for="senha">Senha</label>
+        <input 
+          type="password" 
+          id="senha" 
+          name="senha" 
+          class="form-control"
+          [(ngModel)]="credentials.pass"
+          required
+          minlength="6">
+      </div>
+      
+      <button 
+        type="submit" 
+        class="btn btn-primary w-100 mt-3" 
+        [disabled]="loginForm.invalid">
+        {{ authMode === 'login' ? 'Entrar' : 'Cadastrar' }}
+      </button>
+      
+    </form>
+    
+    <hr>
+    
+    <p class="text-center">
+      {{ authMode === 'login' ? 'Não tem uma conta?' : 'Já tem uma conta?' }}
+      <a href="#" (click)="switchMode(); $event.preventDefault()">
+        {{ authMode === 'login' ? 'Cadastre-se' : 'Faça o login' }}
+      </a>
+    </p>
   </div>
 </div>
-
