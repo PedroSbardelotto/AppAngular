@@ -1,87 +1,78 @@
-import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Injectable } from '@angular/core';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { BehaviorSubject } from 'rxjs';
+import { environment } from '../../environments/environments';
 import { Tarefa } from '../models/tarefa.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TarefaService {
-  private tarefasSubject: BehaviorSubject<Tarefa[]>;
-  public tarefas$: Observable<Tarefa[]>;
-  private proximoId = 1;
+  private supabase: SupabaseClient;
+  private tarefasSubject = new BehaviorSubject<Tarefa[]>([]);
+  public tarefas$ = this.tarefasSubject.asObservable();
 
-  private readonly localStorageKey = 'minhas-tarefas-app';
-
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
-    // Inicializa o Subject com um array vazio primeiro.
-    this.tarefasSubject = new BehaviorSubject<Tarefa[]>([]);
-    this.tarefas$ = this.tarefasSubject.asObservable();
-    
-    // Carrega os dados do localStorage DEPOIS que tudo foi inicializado.
-    this.carregarDadosIniciais();
+  constructor() {
+    this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
+    this.carregarTarefasIniciais();
   }
 
-  private carregarDadosIniciais(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      console.log('Serviço: Tentando carregar dados do localStorage...');
-      const dadosSalvos = localStorage.getItem(this.localStorageKey);
-      let tarefasCarregadas: Tarefa[] = [];
-
-      if (dadosSalvos) {
-        tarefasCarregadas = JSON.parse(dadosSalvos);
-        console.log('Serviço: Dados carregados do localStorage.', tarefasCarregadas);
-      } else {
-        // Se não houver dados salvos, usa a lista inicial.
-        tarefasCarregadas = [
-          { id: 1, nome: 'Configurar ambiente de dev', descricao: 'Instalar Node, Angular CLI e VSCode', validade: '2025-07-10', prioridade: 'alta', status: 'Fazendo', tipo: 'Task DEV' },
-          { id: 2, nome: 'Criar componentes iniciais', descricao: 'Componente de login, navbar e quadro', validade: '2025-07-11', prioridade: 'media', status: 'To Do', tipo: 'Task DEV' },
-          { id: 3, nome: 'Corrigir bug no layout', descricao: 'O footer não está alinhado', validade: '2025-07-12', prioridade: 'alta', status: 'To Do', tipo: 'Bug Produção' }
-        ];
-        console.log('Serviço: Nenhum dado encontrado. Usando dados iniciais.');
-        // Salva os dados iniciais pela primeira vez
-        this.salvarDados(tarefasCarregadas);
-      }
+  // Carrega todas as tarefas do banco de dados
+  async carregarTarefasIniciais() {
+    const { data, error } = await this.supabase
+      .from('tarefas')
+      .select('*')
+      .order('id', { ascending: true });
       
-      // Calcula o próximo ID e emite os dados carregados para todos os componentes.
-      this.proximoId = tarefasCarregadas.length > 0 ? Math.max(...tarefasCarregadas.map(t => t.id!)) + 1 : 1;
-      this.tarefasSubject.next(tarefasCarregadas);
+    if (error) {
+      console.error('Erro ao buscar tarefas:', error);
+    } else {
+      this.tarefasSubject.next(data as Tarefa[] || []);
     }
   }
 
-  private salvarDados(tarefas: Tarefa[]): void {
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.setItem(this.localStorageKey, JSON.stringify(tarefas));
-      console.log('Serviço: Dados salvos no localStorage.');
+  // Adiciona uma nova tarefa
+  async adicionarTarefa(tarefa: Tarefa) {
+    // Remove o 'id' pois o banco de dados o gera automaticamente
+    const { id, ...dadosDaTarefa } = tarefa;
+
+    const { error } = await this.supabase
+      .from('tarefas')
+      .insert(dadosDaTarefa);
+
+    if (error) {
+      console.error('Erro ao adicionar tarefa:', error);
+    } else {
+      // Recarrega a lista para mostrar a nova tarefa
+      this.carregarTarefasIniciais();
     }
   }
 
-  adicionarTarefa(tarefa: Tarefa): void {
-    const tarefasAtuais = this.tarefasSubject.getValue();
-    tarefa.id = this.proximoId++;
-    const novasTarefas = [...tarefasAtuais, tarefa];
-    this.tarefasSubject.next(novasTarefas);
-    this.salvarDados(novasTarefas);
-    console.log('Serviço: Tarefa adicionada.', tarefa);
-  }
+  // Atualiza uma tarefa existente
+  async atualizarTarefa(tarefa: Tarefa) {
+    const { error } = await this.supabase
+      .from('tarefas')
+      .update(tarefa)
+      .eq('id', tarefa.id);
 
-  atualizarTarefa(tarefaAtualizada: Tarefa): void {
-    const tarefasAtuais = this.tarefasSubject.getValue();
-    const index = tarefasAtuais.findIndex(t => t.id === tarefaAtualizada.id);
-    if (index !== -1) {
-      const novasTarefas = [...tarefasAtuais];
-      novasTarefas[index] = tarefaAtualizada;
-      this.tarefasSubject.next(novasTarefas);
-      this.salvarDados(novasTarefas);
-      console.log('Serviço: Tarefa atualizada.', tarefaAtualizada);
+    if (error) {
+      console.error('Erro ao atualizar tarefa:', error);
+    } else {
+      this.carregarTarefasIniciais();
     }
   }
 
-  excluirTarefa(id: number): void {
-    const tarefasAtuais = this.tarefasSubject.getValue();
-    const novasTarefas = tarefasAtuais.filter(t => t.id !== id);
-    this.tarefasSubject.next(novasTarefas);
-    this.salvarDados(novasTarefas);
-    console.log('Serviço: Tarefa excluída. ID:', id);
+  // Exclui uma tarefa
+  async excluirTarefa(id: number) {
+    const { error } = await this.supabase
+      .from('tarefas')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Erro ao excluir tarefa:', error);
+    } else {
+      this.carregarTarefasIniciais();
+    }
   }
 }
