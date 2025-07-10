@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { BehaviorSubject } from 'rxjs';
-import { environment } from '../../environments/environments';
+import { environment } from '../../environments/environment';
 import { Tarefa } from '../models/tarefa.model';
 
 @Injectable({
@@ -17,7 +17,6 @@ export class TarefaService {
     this.carregarTarefasIniciais();
   }
 
-  // Carrega todas as tarefas do banco de dados
   async carregarTarefasIniciais() {
     const { data, error } = await this.supabase
       .from('tarefas')
@@ -31,28 +30,45 @@ export class TarefaService {
     }
   }
 
-  // Adiciona uma nova tarefa
+  // MÉTODO CORRIGIDO
   async adicionarTarefa(tarefa: Tarefa) {
-    // Remove o 'id' pois o banco de dados o gera automaticamente
-    const { id, ...dadosDaTarefa } = tarefa;
+    // Criamos um objeto novo apenas com os dados que queremos inserir.
+    // Deixamos 'id' e 'created_at' de fora para o Supabase cuidar deles.
+    const novaTarefa = {
+      nome: tarefa.nome,
+      descricao: tarefa.descricao,
+      validade: tarefa.validade,
+      prioridade: tarefa.prioridade,
+      status: tarefa.status,
+      tipo: tarefa.tipo
+    };
 
     const { error } = await this.supabase
       .from('tarefas')
-      .insert(dadosDaTarefa);
+      .insert(novaTarefa); // Enviamos o objeto limpo
 
     if (error) {
       console.error('Erro ao adicionar tarefa:', error);
     } else {
-      // Recarrega a lista para mostrar a nova tarefa
       this.carregarTarefasIniciais();
     }
   }
 
-  // Atualiza uma tarefa existente
   async atualizarTarefa(tarefa: Tarefa) {
+     // Para atualizar, o objeto precisa ter o id
+    const tarefaParaAtualizar = {
+      id: tarefa.id,
+      nome: tarefa.nome,
+      descricao: tarefa.descricao,
+      validade: tarefa.validade,
+      prioridade: tarefa.prioridade,
+      status: tarefa.status,
+      tipo: tarefa.tipo
+    };
+
     const { error } = await this.supabase
       .from('tarefas')
-      .update(tarefa)
+      .update(tarefaParaAtualizar)
       .eq('id', tarefa.id);
 
     if (error) {
@@ -62,7 +78,6 @@ export class TarefaService {
     }
   }
 
-  // Exclui uma tarefa
   async excluirTarefa(id: number) {
     const { error } = await this.supabase
       .from('tarefas')
