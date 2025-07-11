@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -11,7 +11,7 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent {
   credentials = { email: '', pass: '' };
   authMode: 'login' | 'cadastro' = 'login';
 
@@ -20,18 +20,9 @@ export class LoginComponent implements OnInit {
     private router: Router
   ) {}
 
-  
-  ngOnInit(): void {
-    this.authService.user$.subscribe(user => {
-      if (user) {
-        
-        this.router.navigate(['/inicio']);
-      }
-    });
-  }
+ 
 
   async onSubmit() {
-   
     if (this.authMode === 'login') {
       const { error } = await this.authService.signIn(this.credentials);
       if (error) {

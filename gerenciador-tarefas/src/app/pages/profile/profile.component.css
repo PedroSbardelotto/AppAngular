@@ -1,0 +1,16 @@
+.avatar-img {
+  width: 150px;
+  height: 150px;
+  object-fit: cover; 
+  border: 4px solid #eee;
+}
+
+
+#avatar-upload {
+  display: none;
+}
+
+
+label[for="avatar-upload"] {
+  cursor: pointer;
+}

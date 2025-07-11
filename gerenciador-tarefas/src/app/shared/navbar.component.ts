@@ -13,7 +13,7 @@ import { User } from '@supabase/supabase-js';
   styleUrls: ['./navbar.component.css']
 })
 export class NavbarComponent {
-  // Expondo o Observable do usuário para o template
+  
   user$: Observable<User | null>;
 
   constructor(

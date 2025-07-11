@@ -1,11 +1,9 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { NgForm } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { TarefaService } from '../../services/tarefa.service';
 import { Tarefa } from '../../models/tarefa.model';
 import { FilterTarefaPipe } from '../../pipes/filter-tarefa.pipe';
-
 
 @Component({
   selector: 'app-cadastro-tarefa',
@@ -15,14 +13,11 @@ import { FilterTarefaPipe } from '../../pipes/filter-tarefa.pipe';
   styleUrls: ['./cadastro-tarefa.component.css']
 })
 export class CadastroTarefaComponent implements OnInit {
-
   @ViewChild('form') form!: NgForm;
   tarefa: Tarefa = this.novaTarefa();
   tarefas: Tarefa[] = [];
-  editando: boolean = false;
-  prioridadeFiltro: string = 'todas';
-
-
+  editando = false;
+  prioridadeFiltro = 'todas';
   tiposDeTarefa: string[] = ['Chamado', 'Bug Produção', 'Task QA', 'RDM', 'Task DEV'];
 
   constructor(private tarefaService: TarefaService) { }
@@ -37,52 +32,46 @@ export class CadastroTarefaComponent implements OnInit {
     return {
       nome: '',
       descricao: '',
-      validade: '',
+      validade: null,
       prioridade: 'media',
       status: 'To Do',
       tipo: null,
     };
   }
 
-  validarTarefa(tarefa: Tarefa): boolean {
-    if (!tarefa.nome.trim()) {
-      alert('Nome da tarefa é obrigatório.');
-      return false;
-    }
-    if (!tarefa.descricao.trim()) {
-      alert('Descrição da tarefa é obrigatória.');
-      return false;
-    }
-    if (!tarefa.tipo) {
-      alert('O tipo da tarefa é obrigatório.');
-      return false;
-    }
-    return true;
-  }
-
-  salvarTarefa(): void {
-    if (!this.validarTarefa(this.tarefa)) {
+  async salvarTarefa(): Promise<void> {
+    if (this.form.invalid) {
+      alert('Por favor, preencha todos os campos obrigatórios.');
       return;
     }
 
-    if (this.editando) {
-      this.tarefaService.atualizarTarefa(this.tarefa);
-    } else {
-      this.tarefaService.adicionarTarefa({ ...this.tarefa });
-    }
+    const tarefaParaSalvar = { ...this.tarefa };
 
-    this.editando = false;
-    this.form.resetForm();
+    try {
+      if (this.editando) {
+        await this.tarefaService.atualizarTarefa(tarefaParaSalvar);
+      } else {
+        // Removemos o 'id' e 'created_at' antes de enviar, pois são gerados pelo banco
+        const { id, created_at, ...novaTarefa } = tarefaParaSalvar;
+        await this.tarefaService.adicionarTarefa(novaTarefa);
+      }
+      this.form.resetForm(this.novaTarefa());
+      this.editando = false;
+    } catch (error) {
+      console.error("Falha ao salvar a tarefa:", error);
+    }
   }
 
   editarTarefa(t: Tarefa): void {
-    this.tarefa = JSON.parse(JSON.stringify(t));
+    this.tarefa = { ...t };
     this.editando = true;
   }
 
-  excluirTarefa(id: number | undefined): void {
+  async excluirTarefa(id: number | undefined): Promise<void> {
     if (id !== undefined) {
-      this.tarefaService.excluirTarefa(id);
+      if (confirm('Tem certeza que deseja excluir esta tarefa?')) {
+        await this.tarefaService.excluirTarefa(id);
+      }
     }
   }
 }

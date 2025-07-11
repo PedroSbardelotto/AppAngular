@@ -12,6 +12,7 @@
           name="email" 
           class="form-control"
           [(ngModel)]="credentials.email"
+          placeholder="seu@email.com"
           required
           email>
       </div>
@@ -24,6 +25,7 @@
           name="senha" 
           class="form-control"
           [(ngModel)]="credentials.pass"
+          placeholder="••••••••"
           required
           minlength="6">
       </div>
@@ -37,13 +39,13 @@
       
     </form>
     
-    <hr>
-    
-    <p class="text-center">
-      {{ authMode === 'login' ? 'Não tem uma conta?' : 'Já tem uma conta?' }}
-      <a href="#" (click)="switchMode(); $event.preventDefault()">
-        {{ authMode === 'login' ? 'Cadastre-se' : 'Faça o login' }}
-      </a>
-    </p>
+    <div class="text-center mt-4">
+      <p class="switch-mode-link">
+        {{ authMode === 'login' ? 'Não tem uma conta?' : 'Já tem uma conta?' }}
+        <a href="#" (click)="switchMode(); $event.preventDefault()">
+          {{ authMode === 'login' ? 'Cadastre-se' : 'Faça o login' }}
+        </a>
+      </p>
+    </div>
   </div>
 </div>
